@@ -12,6 +12,7 @@ import android.location.LocationManager
 import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
+import io.github.offshootworks.ampwright.diagnostics.DiagnosticsLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -79,6 +80,7 @@ class BleScanner(context: Context, private val scope: CoroutineScope) {
         }
 
         override fun onScanFailed(errorCode: Int) {
+            DiagnosticsLog.shared.event("Scan failed (error $errorCode)")
             _scanning.value = false
         }
     }

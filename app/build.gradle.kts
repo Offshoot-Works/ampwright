@@ -23,13 +23,14 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // Sideloaded personal app: sign release builds with the debug key.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
 
     buildFeatures {
+        buildConfig = true // App version for the diagnostics report.
         compose = true
     }
 

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.Bluetooth
 import androidx.compose.material.icons.outlined.BluetoothDisabled
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOff
 import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.SignalCellularAlt
@@ -82,7 +83,9 @@ fun ConnectScreen(
     onConnect: (BmsDevice) -> Unit,
     onForget: () -> Unit,
     onDismissFailure: () -> Unit,
-    onDemo: () -> Unit,
+    /** Null hides the demo button, as in release builds. */
+    onDemo: (() -> Unit)?,
+    onOpenAbout: () -> Unit,
 ) {
     var showAll by rememberSaveable { mutableStateOf(false) }
     val visible = if (showAll) results else results.filter { it.looksLikeBms }
@@ -106,7 +109,12 @@ fun ConnectScreen(
                     color = AppTheme.status.bad,
                     title = "Couldn't connect to ${failure.first.name}",
                     body = failure.second,
-                    action = { Button(onClick = { onConnect(failure.first) }) { Text("Try again") } },
+                    action = {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(onClick = { onConnect(failure.first) }) { Text("Try again") }
+                            TextButton(onClick = onOpenAbout) { Text("Get help") }
+                        }
+                    },
                     onDismiss = onDismissFailure,
                 )
             }
@@ -167,7 +175,7 @@ fun ConnectScreen(
                     Text(
                         when {
                             scanning -> "Looking for batteries… make sure the BMS is awake and within a few metres."
-                            results.isNotEmpty() -> "No LTW batteries found. Turn on \"Show all devices\" if yours has a different name."
+                            results.isNotEmpty() -> "No batteries found. Turn on \"Show all devices\" if yours has a different name."
                             else -> "Tap Scan to look for your battery."
                         },
                         style = MaterialTheme.typography.bodyMedium,
@@ -198,11 +206,21 @@ fun ConnectScreen(
             }
         }
 
+        if (onDemo != null) {
+            item {
+                OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    Icon(Icons.Outlined.Science, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Try demo mode")
+                }
+            }
+        }
+
         item {
-            OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                Icon(Icons.Outlined.Science, contentDescription = null)
+            TextButton(onClick = onOpenAbout, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.Info, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Try demo mode")
+                Text("About & diagnostics")
             }
         }
     }
@@ -223,7 +241,7 @@ private fun Header() {
         Text("Connect to your battery", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(4.dp))
         Text(
-            "Monitor charge, cells and temperatures from your LTW BMS over Bluetooth.",
+            "Monitor charge, cells and temperatures on your battery over Bluetooth.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

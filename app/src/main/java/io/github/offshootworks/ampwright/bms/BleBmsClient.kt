@@ -16,6 +16,9 @@ import android.content.IntentFilter
 import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
+import io.github.offshootworks.ampwright.diagnostics.DiagnosticsLog
+import io.github.offshootworks.ampwright.diagnostics.DiagnosticsLog.Companion.hex
+import io.github.offshootworks.ampwright.diagnostics.DiagnosticsLog.Companion.maskAddress
 import io.github.offshootworks.ampwright.protocol.BmsFrame
 import io.github.offshootworks.ampwright.protocol.BmsParser
 import io.github.offshootworks.ampwright.protocol.BmsProtocol
@@ -47,11 +50,13 @@ import java.util.concurrent.atomic.AtomicReference
  * and Android asks the user for its password. Other modules are used without pairing.
  *
  * Connection state is only mutated on [scope]'s dispatcher (main); GATT callbacks hop onto it.
+ * Each step is recorded in [log] for the diagnostics report.
  */
 @SuppressLint("MissingPermission") // Callers check permissions before connecting.
 class BleBmsClient(
     private val context: Context,
     private val scope: CoroutineScope,
+    private val log: DiagnosticsLog = DiagnosticsLog.shared,
 ) : BmsSource {
 
     private val _link = MutableStateFlow<LinkState>(LinkState.Disconnected)
@@ -78,6 +83,7 @@ class BleBmsClient(
 
     override fun connect(device: BmsDevice) {
         disconnect()
+        log.event("Connect to ${device.name} (${maskAddress(device.address)})")
         target = device
         attempt = 0
         everConnected = false
@@ -87,12 +93,14 @@ class BleBmsClient(
     }
 
     override fun disconnect() {
+        if (target != null) log.event("Disconnected")
         target = null
         teardown()
         _link.value = LinkState.Disconnected
     }
 
     override fun send(command: MosCommand) {
+        log.event("Switch command queued: ${command.name}")
         pendingCommand.set(command)
     }
 
@@ -107,6 +115,7 @@ class BleBmsClient(
         assembler.reset()
         try {
             val remote = adapter.getRemoteDevice(device.address)
+            log.event("Attempt $attempt, ${bondName(remote.bondState)}")
             gatt = remote.connectGatt(context, false, callback, BluetoothDevice.TRANSPORT_LE)
         } catch (e: SecurityException) {
             fail("Bluetooth permission was denied.")
@@ -129,12 +138,14 @@ class BleBmsClient(
 
     /** Gives up without retrying. */
     private fun fail(reason: String) {
+        log.event("Gave up: $reason")
         target = null
         teardown()
         _link.value = LinkState.Failed(reason)
     }
 
     private fun discoverServices(g: BluetoothGatt) {
+        log.event("Discovering services")
         if (!g.discoverServices()) onAttemptFailed("Service discovery failed.")
     }
 
@@ -149,7 +160,9 @@ class BleBmsClient(
             override fun onReceive(c: Context, intent: Intent) {
                 val device = IntentCompat.getParcelableExtra(intent, BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
                 if (g !== gatt || device?.address != g.device.address) return
-                when (intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR)) {
+                val state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR)
+                log.event("Bond state changed: ${bondName(state)}")
+                when (state) {
                     BluetoothDevice.BOND_BONDED -> onPaired(g)
                     BluetoothDevice.BOND_NONE -> fail("Pairing failed. Check the battery's password and try again.")
                 }
@@ -161,6 +174,7 @@ class BleBmsClient(
         ContextCompat.registerReceiver(
             context, receiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED,
         )
+        log.event("Pairing needed, ${bondName(g.device.bondState)}")
         val started = when (g.device.bondState) {
             BluetoothDevice.BOND_BONDED -> return onPaired(g)
             BluetoothDevice.BOND_BONDING -> true // Android already started it.
@@ -192,6 +206,7 @@ class BleBmsClient(
     }
 
     private fun onAttemptFailed(reason: String) {
+        log.event("Attempt failed: $reason")
         teardown()
         if (target == null) return
         if (!everConnected && attempt >= MAX_INITIAL_ATTEMPTS) {
@@ -227,6 +242,7 @@ class BleBmsClient(
 
     private fun startPolling() {
         if (pollJob != null) return
+        log.event("Polling started")
         nextRead = BmsProtocol.CMD_BASIC_INFO
         responded.set(true)
         pollJob = scope.launch {
@@ -296,6 +312,7 @@ class BleBmsClient(
     /** Runs on a binder thread. */
     private fun onNotification(g: BluetoothGatt, value: ByteArray) {
         if (g !== gatt) return
+        log.notification(value)
         val frames = assembler.feed(value)
         if (frames.isEmpty()) return
         frames.forEach(::apply)
@@ -307,6 +324,7 @@ class BleBmsClient(
                 connectionJob = null
                 everConnected = true
                 attempt = 0
+                log.event("Receiving data")
                 _link.value = LinkState.Connected
             }
         }
@@ -314,20 +332,47 @@ class BleBmsClient(
 
     private fun apply(frame: BmsFrame) {
         val now = System.currentTimeMillis()
+        log.payload(frame.cmd, frame.payload)
         when (frame.cmd) {
             BmsProtocol.CMD_BASIC_INFO -> {
-                BmsParser.parseBasic(frame.payload)?.let { b -> _snapshot.update { it.copy(basic = b, updatedAtMillis = now) } }
+                BmsParser.parseBasic(frame.payload)
+                    ?.let { b -> _snapshot.update { it.copy(basic = b, updatedAtMillis = now) } }
+                    ?: logIgnored(frame)
                 nextRead = BmsProtocol.CMD_CELL_VOLTAGES
             }
             BmsProtocol.CMD_CELL_VOLTAGES -> {
-                BmsParser.parseCells(frame.payload)?.let { c -> _snapshot.update { it.copy(cells = c, updatedAtMillis = now) } }
+                BmsParser.parseCells(frame.payload)
+                    ?.let { c -> _snapshot.update { it.copy(cells = c, updatedAtMillis = now) } }
+                    ?: logIgnored(frame)
                 nextRead = BmsProtocol.CMD_TEMPERATURES
             }
             BmsProtocol.CMD_TEMPERATURES -> {
-                BmsParser.parseTemps(frame.payload)?.let { t -> _snapshot.update { it.copy(temps = t, updatedAtMillis = now) } }
+                BmsParser.parseTemps(frame.payload)
+                    ?.let { t -> _snapshot.update { it.copy(temps = t, updatedAtMillis = now) } }
+                    ?: logIgnored(frame)
                 nextRead = BmsProtocol.CMD_BASIC_INFO
             }
-            else -> nextRead = BmsProtocol.CMD_BASIC_INFO
+            else -> {
+                log.event("Reply to command 0x${hex(frame.cmd)}, ${frame.payload.size} bytes")
+                nextRead = BmsProtocol.CMD_BASIC_INFO
+            }
+        }
+    }
+
+    private fun logIgnored(frame: BmsFrame) =
+        log.event("Ignored reply to 0x${hex(frame.cmd)}: ${frame.payload.size} bytes is too short to read")
+
+    /** One line per service and characteristic, for the diagnostics report. */
+    private fun describeServices(g: BluetoothGatt): List<String> = g.services.flatMap { service ->
+        listOf(service.uuid.toString()) + service.characteristics.map { c ->
+            val props = listOfNotNull(
+                "read".takeIf { c.properties and BluetoothGattCharacteristic.PROPERTY_READ != 0 },
+                "write".takeIf { c.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0 },
+                "write-no-response".takeIf { c.properties and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0 },
+                "notify".takeIf { c.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0 },
+                "indicate".takeIf { c.properties and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0 },
+            )
+            "  ${c.uuid} ${props.joinToString(", ")}"
         }
     }
 
@@ -335,6 +380,12 @@ class BleBmsClient(
         override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
             scope.launch {
                 if (g !== gatt) return@launch
+                val state = when (newState) {
+                    BluetoothProfile.STATE_CONNECTED -> "connected"
+                    BluetoothProfile.STATE_DISCONNECTED -> "disconnected"
+                    else -> "state $newState"
+                }
+                log.event("GATT $state (status $status)")
                 if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
                     delay(SERVICE_DISCOVERY_DELAY_MS)
                     if (g !== gatt) return@launch
@@ -349,8 +400,13 @@ class BleBmsClient(
             scope.launch {
                 if (g !== gatt) return@launch
                 val found = if (status == BluetoothGatt.GATT_SUCCESS) findProfile(g) else null
+                log.gatt(describeServices(g), found?.first?.name)
+                log.event("Services discovered (status $status), module: ${found?.first?.name ?: "none recognised"}")
                 if (found == null) {
-                    fail("This device doesn't look like an LTW BMS.")
+                    fail(
+                        "This device doesn't use a Bluetooth module the app knows. If it's a battery, tap " +
+                            "Get help and share the diagnostics report so support can be added.",
+                    )
                     return@launch
                 }
                 val (profile, write, notify) = found
@@ -359,12 +415,19 @@ class BleBmsClient(
                     return@launch
                 }
                 writeChar = write
-                if (!enableNotifications(g, notify)) startPolling()
+                if (!enableNotifications(g, notify)) {
+                    log.event("Couldn't enable notifications; polling anyway")
+                    startPolling()
+                }
             }
         }
 
         override fun onDescriptorWrite(g: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
-            scope.launch { if (g === gatt) startPolling() }
+            scope.launch {
+                if (g !== gatt) return@launch
+                log.event("Notifications enabled (status $status)")
+                startPolling()
+            }
         }
 
         override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic, value: ByteArray) {
@@ -380,6 +443,13 @@ class BleBmsClient(
 
     companion object {
         private val CCCD_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+
+        private fun bondName(state: Int) = when (state) {
+            BluetoothDevice.BOND_NONE -> "not paired"
+            BluetoothDevice.BOND_BONDING -> "pairing"
+            BluetoothDevice.BOND_BONDED -> "paired"
+            else -> "bond state $state"
+        }
 
         private const val POLL_INTERVAL_MS = 500L
         private const val MAX_MISSED_POLLS = 5

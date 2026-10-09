@@ -11,6 +11,7 @@ import io.github.offshootworks.ampwright.bms.BmsSource
 import io.github.offshootworks.ampwright.bms.DemoBmsSource
 import io.github.offshootworks.ampwright.bms.DevicePrefs
 import io.github.offshootworks.ampwright.bms.LinkState
+import io.github.offshootworks.ampwright.diagnostics.DiagnosticsReport
 import io.github.offshootworks.ampwright.protocol.MosCommand
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,6 +92,8 @@ class BmsViewModel(app: Application) : AndroidViewModel(app) {
     fun setCharging(on: Boolean) = source.value.send(if (on) MosCommand.ChargeOn else MosCommand.ChargeOff)
 
     fun setDischarging(on: Boolean) = source.value.send(if (on) MosCommand.DischargeOn else MosCommand.DischargeOff)
+
+    fun diagnosticsReport(): String = DiagnosticsReport.build(getApplication(), _device.value, link.value, snapshot.value)
 
     override fun onCleared() {
         scanner.stop()

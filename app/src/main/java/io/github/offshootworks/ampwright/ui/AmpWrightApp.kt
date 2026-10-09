@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.ViewWeek
 import androidx.compose.material.icons.outlined.BluetoothDisabled
 import androidx.compose.material.icons.outlined.Dashboard
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Thermostat
@@ -67,11 +68,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.offshootworks.ampwright.BuildConfig
 import io.github.offshootworks.ampwright.bms.BlePermissions
 import io.github.offshootworks.ampwright.bms.BmsDevice
 import io.github.offshootworks.ampwright.bms.BmsSnapshot
 import io.github.offshootworks.ampwright.bms.LinkState
 import io.github.offshootworks.ampwright.protocol.StatusFlags
+import io.github.offshootworks.ampwright.ui.screens.AboutScreen
 import io.github.offshootworks.ampwright.ui.screens.AlertsScreen
 import io.github.offshootworks.ampwright.ui.screens.BluetoothEnv
 import io.github.offshootworks.ampwright.ui.screens.CellsScreen
@@ -123,6 +126,14 @@ fun AmpWrightApp(vm: BmsViewModel = viewModel()) {
         if (env.ready) vm.autoConnect()
     }
 
+    // Shown over whichever screen opened it; the connection carries on underneath.
+    var showAbout by rememberSaveable { mutableStateOf(false) }
+    if (showAbout) {
+        BackHandler { showAbout = false }
+        AboutScreen(buildReport = vm::diagnosticsReport, onBack = { showAbout = false })
+        return
+    }
+
     val current = device
     val failed = link as? LinkState.Failed
     if (current != null && failed == null) {
@@ -134,6 +145,7 @@ fun AmpWrightApp(vm: BmsViewModel = viewModel()) {
             onDisconnect = vm::disconnect,
             onSetCharging = vm::setCharging,
             onSetDischarging = vm::setDischarging,
+            onOpenAbout = { showAbout = true },
         )
     } else {
         LaunchedEffect(env.ready) {
@@ -161,7 +173,9 @@ fun AmpWrightApp(vm: BmsViewModel = viewModel()) {
                 onConnect = vm::connect,
                 onForget = vm::forgetLastDevice,
                 onDismissFailure = vm::disconnect,
-                onDemo = vm::startDemo,
+                // A simulated battery helps development but would confuse people using the release.
+                onDemo = if (BuildConfig.DEBUG) vm::startDemo else null,
+                onOpenAbout = { showAbout = true },
             )
         }
     }
@@ -184,6 +198,7 @@ private fun Dashboard(
     onDisconnect: () -> Unit,
     onSetCharging: (Boolean) -> Unit,
     onSetDischarging: (Boolean) -> Unit,
+    onOpenAbout: () -> Unit,
 ) {
     var tab by rememberSaveable { mutableStateOf(Tab.Overview) }
     var menuOpen by remember { mutableStateOf(false) }
@@ -216,6 +231,14 @@ private fun Dashboard(
                                 onClick = {
                                     menuOpen = false
                                     onDisconnect()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("About & diagnostics") },
+                                leadingIcon = { Icon(Icons.Outlined.Info, contentDescription = null) },
+                                onClick = {
+                                    menuOpen = false
+                                    onOpenAbout()
                                 },
                             )
                         }

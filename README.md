@@ -25,6 +25,16 @@ This app supports the LTW Bluetooth BMS protocol and nothing else. Requests to a
 (JBD, Daly, JK and so on) will be closed; other open-source apps already cover those. Fixes and
 reports for LTW batteries, including ones fitted with a different Bluetooth module, are welcome.
 
+## Tested batteries
+
+| Battery | Bluetooth module | Result |
+|---|---|---|
+| EcoTree, older models (before the BMS supplier change) | LTW | Works |
+
+Tried it on another battery? Please
+[send a battery report](https://github.com/Offshoot-Works/ampwright/issues/new?template=battery-report.yml),
+whether it worked or not.
+
 ## Features
 
 - **Overview:** a state-of-charge ring, charge/discharge rate, and an estimated time to full or empty.
@@ -38,7 +48,9 @@ reports for LTW batteries, including ones fitted with a different Bluetooth modu
   conditions is also available.
 - **Connection:** reconnects automatically if the link drops, and connects to the last battery when the
   app launches. An unpaired battery is paired from inside the app: Android asks for its password once.
-- **Demo mode:** a simulated 4S 100 Ah LiFePO4 pack, for trying the app without a battery.
+- **Diagnostics:** a shareable report of what the app saw from the battery, for attaching to bug reports.
+- **Demo mode (debug builds only):** a simulated 4S 100 Ah LiFePO4 pack, for working on the app without
+  a battery.
 - **Theming:** light and dark themes, with wallpaper colours on Android 12+.
 
 ## Building and installing
@@ -54,6 +66,16 @@ To install, copy the APK to the phone and open it ("Install unknown apps" must b
 `adb install app-release.apk`. The release build is signed with the local debug key, which is fine
 for sideloading. Requires Android 6.0 (API 23) or newer and targets Android 16 (API 36). API 23 is the
 lowest version the current Compose/AndroidX libraries support.
+
+## Reporting a problem
+
+[Open an issue](https://github.com/Offshoot-Works/ampwright/issues/new/choose) and include the
+diagnostics report. In the app, open **About & diagnostics** (from the ⋮ menu, or the link at the
+bottom of the connect screen) and tap **Copy** or **Share**.
+
+The report contains the app and Android versions, connection events, the raw data the battery sent
+and the last crash, if there was one. Most of the battery's Bluetooth address is hidden, and nothing
+leaves your phone unless you share it.
 
 ## Protocol reference
 
@@ -95,9 +117,10 @@ The bit meanings for alarms and protections are in
 ## Code layout
 
 ```
-protocol/   Frame encoding, frame reassembly, payload parsers, alarm/protection tables (pure Kotlin, unit-tested)
-bms/        BLE client, scanner, demo source, remembered device
-ui/         ViewModel, Compose screens, theme
+protocol/     Frame encoding, frame reassembly, payload parsers, alarm/protection tables (pure Kotlin, unit-tested)
+bms/          BLE client, scanner, demo source, remembered device
+diagnostics/  Event log, crash capture and the shareable diagnostics report
+ui/           ViewModel, Compose screens, theme
 ```
 
 ## Changes from the original
