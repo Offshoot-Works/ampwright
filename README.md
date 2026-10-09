@@ -24,9 +24,10 @@ kept byte-for-byte. Everything else is new: Kotlin, Jetpack Compose and Material
 This is an independent, open-source project. It is not made, endorsed or supported by LTW, EcoTree or
 any other battery maker.
 
-**It has only been tested on older EcoTree batteries**, from before EcoTree moved to a different BMS
-supplier. Other batteries with an LTW Bluetooth BMS use the same protocol and should work, but haven't
-been tested. Newer EcoTree batteries use a different BMS and are not supported.
+**It has only been tested on an EcoTree EL12.8-110HB bought in 2022** (see
+[Tested batteries](#tested-batteries)). Other batteries with an LTW Bluetooth BMS use the same protocol
+and should work, but haven't been tested. Some newer EcoTree batteries use a BMS from a different
+maker, which isn't supported.
 
 The app can switch a battery's charging and output off. Use it at your own risk. If you try it on
 another battery, please open an issue saying whether it worked.
