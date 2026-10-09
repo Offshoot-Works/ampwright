@@ -39,9 +39,9 @@ reports for LTW batteries, including ones fitted with a different Bluetooth modu
 
 ## Tested batteries
 
-| Battery | Part number | Specification | Bluetooth module | Result |
-|---|---|---|---|---|
-| EcoTree Lithium, older model (before the BMS supplier change) | EL12.8-110HB | 12.8 V, 110 Ah LiFePO4, 4 cells | LTW | Works |
+| Battery | Part number | Bought | Specification | Bluetooth name | BMS firmware | Bluetooth module | Result |
+|---|---|---|---|---|---|---|---|
+| EcoTree Lithium | EL12.8-110HB ([datasheet](https://ecotreelithium.co.uk/wp-content/uploads/2020/08/EL12.8-110-EcotreeData-sheet.pdf)) | 2020 | 12.8 V, 110 Ah LiFePO4, 4 cells | `BLE Device …` | V0.2 | LTW | Works |
 
 The BMS doesn't report the battery's part number, but the app shows its cell count, capacity and
 firmware version, which you can compare with the label and the table above.
