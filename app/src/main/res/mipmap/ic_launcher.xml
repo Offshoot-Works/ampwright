@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher icon for Android 6.0-7.1, which don't support adaptive icons (mipmap-anydpi-v26 overrides this). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#006A60"
+        android:pathData="M54,6a48,48 0,1 1,0 96a48,48 0,1 1,0 -96z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M47,30h14a2,2 0,0 1,2 2v3h-18v-3a2,2 0,0 1,2 -2z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:pathData="M42,36h24a4,4 0,0 1,4 4v32a4,4 0,0 1,-4 4h-24a4,4 0,0 1,-4 -4v-32a4,4 0,0 1,4 -4z" />
+    <path
+        android:fillColor="#9EF2E4"
+        android:pathData="M57,41l-11,17h7l-3,13l11,-18h-7z" />
+</vector>
