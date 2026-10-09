@@ -1,0 +1,28 @@
+AmpWright connects to your lithium battery over Bluetooth and shows what its battery management system (BMS) is reporting. It's built for batteries fitted with an LTW Bluetooth BMS, including EcoTree Lithium batteries that were left without a working app.
+
+WHAT YOU CAN SEE
+• Overview: state of charge, charge or discharge rate, and an estimate of the time until full or empty
+• Voltage, current, power, temperature, capacity, health and charge cycles
+• Cells: a bar chart of every cell voltage, with the highest and lowest cells highlighted and balancing shown
+• Temperatures: every sensor in the pack, plus the BMS power switches and ambient
+• Alerts: active warnings and protections explained in plain English, and the full list of conditions the BMS monitors
+
+WHAT YOU CAN CONTROL
+• Turn the battery's charging and output on or off. Turning either off asks you to confirm first.
+
+CONNECTING
+• Finds nearby batteries and pairs from inside the app. Android asks for the battery's password once.
+• Reconnects automatically if the link drops, and connects to your last battery when the app opens.
+
+TESTED BATTERIES
+AmpWright has been tested on an EcoTree Lithium EL12.8-110HB. Other batteries with an LTW Bluetooth BMS use the same protocol and should work. Some newer EcoTree batteries use a BMS from a different maker, which isn't supported.
+
+If you try it on another battery, please send a report through the app's About & diagnostics screen, whether it worked or not.
+
+PRIVACY
+No accounts, adverts or tracking. The app has no internet access. A diagnostics report is only shared if you choose to share it.
+
+OPEN SOURCE
+AmpWright is free software under the GNU GPL version 3 or later. The source code is at github.com/Offshoot-Works/ampwright.
+
+AmpWright is an independent app from Offshoot Works. It is not made, endorsed or supported by EcoTree, LTW or any other battery maker. Switching a battery's charging or output off is at your own risk.

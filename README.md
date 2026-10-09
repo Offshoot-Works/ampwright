@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/icon.png" width="96" alt="AmpWright app icon">
+  <img src="fastlane/metadata/android/en-GB/images/icon.png" width="96" alt="AmpWright app icon">
 </p>
 
 <h1 align="center">AmpWright: Battery Monitor</h1>
@@ -12,10 +12,10 @@ LTW Bluetooth BMS should work too. The Bluetooth protocol was worked out from LT
 kept byte-for-byte. Everything else is new: Kotlin, Jetpack Compose and Material 3.
 
 <p align="center">
-  <img src="docs/images/overview.png" width="200" alt="Overview screen: charge ring at 72%, charging at 10.79 A, voltage, current, power and temperature tiles">
-  <img src="docs/images/cells.png" width="200" alt="Cells screen: spread, highest and lowest cell, and a bar chart of four cell voltages">
-  <img src="docs/images/temps.png" width="200" alt="Temperatures screen: two cell sensors, the MOSFET and ambient, all normal">
-  <img src="docs/images/alerts.png" width="200" alt="Alerts screen: all clear, with the list of monitored protections">
+  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/1-overview.png" width="200" alt="Overview screen: charge ring at 72%, charging at 10.79 A, voltage, current, power and temperature tiles">
+  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/2-cells.png" width="200" alt="Cells screen: spread, highest and lowest cell, and a bar chart of four cell voltages">
+  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/3-temps.png" width="200" alt="Temperatures screen: two cell sensors, the MOSFET and ambient, all normal">
+  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/4-alerts.png" width="200" alt="Alerts screen: all clear, with the list of monitored protections">
 </p>
 <p align="center"><sub>Shown with the simulated battery from a development build.</sub></p>
 
@@ -76,13 +76,33 @@ You need Android Studio, or the Android SDK plus JDK 17 or newer.
 
 ```
 gradlew assembleRelease        # app/build/outputs/apk/release/app-release.apk
+gradlew bundleRelease          # app/build/outputs/bundle/release/app-release.aab, for Google Play
 gradlew testDebugUnitTest      # protocol unit tests
 ```
 
 To install, copy the APK to the phone and open it ("Install unknown apps" must be allowed), or use
-`adb install app-release.apk`. The release build is signed with the local debug key, which is fine
-for sideloading. Requires Android 6.0 (API 23) or newer and targets Android 16 (API 36). API 23 is the
-lowest version the current Compose/AndroidX libraries support.
+`adb install app-release.apk`. Requires Android 6.0 (API 23) or newer and targets Android 16 (API 36).
+API 23 is the lowest version the current Compose/AndroidX libraries support. Debug builds also have a
+demo mode with a simulated battery.
+
+### Signing
+
+Release builds are signed with the key described in `keystore.properties` in the project root. That
+file and the key itself are never committed. Without the file, release builds are signed with the
+local debug key, which is fine for sideloading but not accepted by Google Play.
+
+```
+storeFile=C:/path/to/ampwright-upload.jks
+storePassword=...
+keyAlias=upload
+keyPassword=...
+```
+
+The store listing text and images are in [`fastlane/metadata/android`](fastlane/metadata/android).
+
+## Privacy
+
+The app collects no data and has no internet access. See the [privacy policy](PRIVACY.md).
 
 ## Reporting a problem
 

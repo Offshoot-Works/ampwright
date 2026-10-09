@@ -1,6 +1,14 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
+}
+
+// The upload key for Google Play lives outside the repo; keystore.properties points to it and is
+// git-ignored. Without it, release builds fall back to the debug key so anyone can still build.
+val keystoreProperties = rootProject.file("keystore.properties").takeIf { it.exists() }?.let { file ->
+    Properties().apply { file.inputStream().use(::load) }
 }
 
 android {
@@ -14,16 +22,27 @@ android {
         // Floor set by Compose/AndroidX (API 23, Android 6.0).
         minSdk = 23
         targetSdk = 36
+        // Raise versionCode for every build uploaded to Google Play.
         versionCode = 1
-        versionName = "2.0"
+        versionName = "1.0"
+    }
+
+    signingConfigs {
+        if (keystoreProperties != null) {
+            create("upload") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Sideloaded personal app: sign release builds with the debug key.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("debug")
         }
     }
 
