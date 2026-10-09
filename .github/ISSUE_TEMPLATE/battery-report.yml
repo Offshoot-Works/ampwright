@@ -21,16 +21,16 @@ body:
     id: battery
     attributes:
       label: Battery
-      description: Brand, model and capacity, as printed on the battery.
-      placeholder: EcoTree 12V 100Ah
+      description: Brand and part number, as printed on the label on the battery.
+      placeholder: EcoTree Lithium EL12.8-110HB
     validations:
       required: true
   - type: input
     id: bought
     attributes:
       label: Roughly when was it bought?
-      description: This helps tell older and newer EcoTree batteries apart, as they use different BMS makers.
-      placeholder: "2021"
+      description: This helps work out which batteries have which BMS, as the same model may have changed over time.
+      placeholder: "2022"
   - type: textarea
     id: details
     attributes:
@@ -42,5 +42,6 @@ body:
       label: Diagnostics report
       description: >-
         In the app, open "About & diagnostics" (from the ⋮ menu, or the link at the bottom of the connect
-        screen), tap Copy, and paste it here.
+        screen), tap Copy, and paste it here. It includes the battery's Bluetooth name, BMS firmware,
+        capacity and cell count, so you don't need to look those up.
       render: text

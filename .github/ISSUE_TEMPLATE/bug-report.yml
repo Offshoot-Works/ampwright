@@ -13,8 +13,8 @@ body:
     id: battery
     attributes:
       label: Battery
-      description: Brand, model and capacity, if a battery was involved.
-      placeholder: EcoTree 12V 100Ah
+      description: Brand and part number from the label on the battery, if a battery was involved.
+      placeholder: EcoTree Lithium EL12.8-110HB
   - type: textarea
     id: diagnostics
     attributes:
