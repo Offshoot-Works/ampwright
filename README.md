@@ -39,9 +39,12 @@ reports for LTW batteries, including ones fitted with a different Bluetooth modu
 
 ## Tested batteries
 
-| Battery | Bluetooth module | Result |
-|---|---|---|
-| EcoTree, older models (before the BMS supplier change) | LTW | Works |
+| Battery | Part number | Specification | Bluetooth module | Result |
+|---|---|---|---|---|
+| EcoTree Lithium, older model (before the BMS supplier change) | EL12.8-110HB | 12.8 V, 110 Ah LiFePO4, 4 cells | LTW | Works |
+
+The BMS doesn't report the battery's part number, but the app shows its cell count, capacity and
+firmware version, which you can compare with the label and the table above.
 
 Tried it on another battery? Please
 [send a battery report](https://github.com/Offshoot-Works/ampwright/issues/new?template=battery-report.yml),
