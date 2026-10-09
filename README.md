@@ -1,4 +1,8 @@
-# AmpWright: Battery Monitor
+<p align="center">
+  <img src="docs/images/icon.png" width="96" alt="AmpWright app icon">
+</p>
+
+<h1 align="center">AmpWright: Battery Monitor</h1>
 
 An Android app for checking and controlling older EcoTree lithium batteries over Bluetooth, from
 Offshoot Works. The app these batteries came with is no longer supported; AmpWright replaces it.
@@ -6,6 +10,14 @@ Offshoot Works. The app these batteries came with is no longer supported; AmpWri
 Inside, these batteries use a battery management system (BMS) made by LTW, so other batteries with an
 LTW Bluetooth BMS should work too. The Bluetooth protocol was worked out from LTW's own apps and is
 kept byte-for-byte. Everything else is new: Kotlin, Jetpack Compose and Material 3.
+
+<p align="center">
+  <img src="docs/images/overview.png" width="200" alt="Overview screen: charge ring at 72%, charging at 10.79 A, voltage, current, power and temperature tiles">
+  <img src="docs/images/cells.png" width="200" alt="Cells screen: spread, highest and lowest cell, and a bar chart of four cell voltages">
+  <img src="docs/images/temps.png" width="200" alt="Temperatures screen: two cell sensors, the MOSFET and ambient, all normal">
+  <img src="docs/images/alerts.png" width="200" alt="Alerts screen: all clear, with the list of monitored protections">
+</p>
+<p align="center"><sub>Shown with the simulated battery from a development build.</sub></p>
 
 ## About this project
 
