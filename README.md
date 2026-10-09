@@ -12,12 +12,12 @@ LTW Bluetooth BMS should work too. The Bluetooth protocol was worked out from LT
 kept byte-for-byte. Everything else is new: Kotlin, Jetpack Compose and Material 3.
 
 <p align="center">
-  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/1-overview.png" width="200" alt="Overview screen: charge ring at 72%, charging at 10.79 A, voltage, current, power and temperature tiles">
-  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/2-cells.png" width="200" alt="Cells screen: spread, highest and lowest cell, and a bar chart of four cell voltages">
-  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/3-temps.png" width="200" alt="Temperatures screen: two cell sensors, the MOSFET and ambient, all normal">
+  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/1-overview.png" width="200" alt="Overview screen: charge ring at 94% with 103.2 Ah left, idle, voltage, current, power and temperature tiles">
+  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/2-cells.png" width="200" alt="Cells screen: 2 mV spread across four cells, with a bar chart of each cell voltage">
+  <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/3-temps.png" width="200" alt="Temperatures screen: the cell sensor, the MOSFET and ambient, all normal">
   <img src="fastlane/metadata/android/en-GB/images/phoneScreenshots/4-alerts.png" width="200" alt="Alerts screen: all clear, with the list of monitored protections">
 </p>
-<p align="center"><sub>Shown with the simulated battery from a development build.</sub></p>
+<p align="center"><sub>Connected to an EcoTree Lithium EL12.8-110HB.</sub></p>
 
 ## About this project
 
@@ -92,11 +92,23 @@ file and the key itself are never committed. Without the file, release builds ar
 local debug key, which is fine for sideloading but not accepted by Google Play.
 
 ```
-storeFile=C:/path/to/ampwright-upload.jks
+storeFile=C:/path/to/ampwright-release.jks
 storePassword=...
-keyAlias=upload
+keyAlias=ampwright
 keyPassword=...
 ```
+
+The same key signs the APKs on GitHub Releases and is registered with Google Play as the app signing
+key, so the Play and GitHub versions can update each other. Google can't replace this key if it is
+lost, so keep a backup of the `.jks` file and its password.
+
+### Releasing
+
+1. Raise `versionCode` and `versionName` in `app/build.gradle.kts`, and add
+   `fastlane/metadata/android/en-GB/changelogs/<versionCode>.txt`.
+2. `gradlew bundleRelease assembleRelease`
+3. Upload `app-release.aab` to Google Play.
+4. Attach `app-release.apk` to a GitHub release for the same version.
 
 The store listing text and images are in [`fastlane/metadata/android`](fastlane/metadata/android).
 

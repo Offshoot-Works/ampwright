@@ -5,8 +5,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// The upload key for Google Play lives outside the repo; keystore.properties points to it and is
-// git-ignored. Without it, release builds fall back to the debug key so anyone can still build.
+// The release key signs both the GitHub APKs and the Google Play uploads, and is also registered with
+// Play as the app signing key, so either can update the other. It lives outside the repo;
+// keystore.properties points to it and is git-ignored. Without it, release builds fall back to the
+// debug key so anyone can still build.
 val keystoreProperties = rootProject.file("keystore.properties").takeIf { it.exists() }?.let { file ->
     Properties().apply { file.inputStream().use(::load) }
 }
@@ -29,7 +31,7 @@ android {
 
     signingConfigs {
         if (keystoreProperties != null) {
-            create("upload") {
+            create("release") {
                 storeFile = file(keystoreProperties.getProperty("storeFile"))
                 storePassword = keystoreProperties.getProperty("storePassword")
                 keyAlias = keystoreProperties.getProperty("keyAlias")
@@ -42,7 +44,7 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 
