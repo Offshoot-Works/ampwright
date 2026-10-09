@@ -1,22 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Battery outline with a lightning bolt, centred in the 66dp adaptive-icon safe zone. -->
+<!-- Charged O: the Offshoot Works sprouting O as a charge ring with a bolt. The ring is centred and
+     the leaf tip reaches the edge of the 66dp adaptive-icon safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Terminal -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M47,30h14a2,2 0,0 1,2 2v3h-18v-3a2,2 0,0 1,2 -2z" />
-    <!-- Body outline -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="4"
-        android:pathData="M42,36h24a4,4 0,0 1,4 4v32a4,4 0,0 1,-4 4h-24a4,4 0,0 1,-4 -4v-32a4,4 0,0 1,4 -4z" />
-    <!-- Bolt -->
-    <path
-        android:fillColor="#9EF2E4"
-        android:pathData="M57,41l-11,17h7l-3,13l11,-18h-7z" />
+    <group
+        android:scaleX="0.52"
+        android:scaleY="0.52"
+        android:translateX="54"
+        android:translateY="54">
+        <!-- Ring -->
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#F2A516"
+            android:strokeWidth="10"
+            android:pathData="M-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0z" />
+        <!-- Stem -->
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#F2A516"
+            android:strokeWidth="8"
+            android:strokeLineCap="round"
+            android:pathData="M20,-20L27,-27" />
+        <!-- Leaf -->
+        <path
+            android:fillColor="#9BE0B4"
+            android:pathData="M26,-26C26,-37 34,-44 45,-45C45,-34 37,-26 26,-26z" />
+        <!-- Bolt -->
+        <path
+            android:fillColor="#F2A516"
+            android:strokeColor="#F2A516"
+            android:strokeWidth="1.6"
+            android:strokeLineJoin="round"
+            android:pathData="M2.4,-15.2L-8.8,2.4H-0.8L-4,15.2L8.8,-4H0.8z" />
+    </group>
 </vector>
