@@ -1,0 +1,46 @@
+name: Battery report
+description: Tell us whether AmpWright works with your battery, whether it worked or not.
+title: "[Battery] "
+labels: ["battery report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying AmpWright. Reports like this are how the list of supported batteries grows.
+  - type: dropdown
+    id: result
+    attributes:
+      label: Did it work?
+      options:
+        - "Yes, the readings looked right"
+        - "Partly: it connected, but some readings look wrong"
+        - "No: it wouldn't connect or showed no data"
+    validations:
+      required: true
+  - type: input
+    id: battery
+    attributes:
+      label: Battery
+      description: Brand, model and capacity, as printed on the battery.
+      placeholder: EcoTree 12V 100Ah
+    validations:
+      required: true
+  - type: input
+    id: bought
+    attributes:
+      label: Roughly when was it bought?
+      description: This helps tell older and newer EcoTree batteries apart, as they use different BMS makers.
+      placeholder: "2021"
+  - type: textarea
+    id: details
+    attributes:
+      label: What happened?
+      description: Anything that looked wrong, for example a reading that doesn't match the battery's own display or a multimeter.
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics report
+      description: >-
+        In the app, open "About & diagnostics" (from the ⋮ menu, or the link at the bottom of the connect
+        screen), tap Copy, and paste it here.
+      render: text

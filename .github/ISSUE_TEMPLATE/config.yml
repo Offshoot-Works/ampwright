@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Other BMS brands (JBD, Daly, JK and so on)
+    url: https://github.com/Offshoot-Works/ampwright#scope
+    about: AmpWright only supports the LTW Bluetooth BMS. Requests for other brands will be closed.
