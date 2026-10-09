@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattConnectionSettings
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
@@ -116,7 +117,18 @@ class BleBmsClient(
         try {
             val remote = adapter.getRemoteDevice(device.address)
             log.event("Attempt $attempt, ${bondName(remote.bondState)}")
-            gatt = remote.connectGatt(context, false, callback, BluetoothDevice.TRANSPORT_LE)
+            gatt = if (Build.VERSION.SDK_INT >= 37) {
+                val settings = BluetoothGattConnectionSettings.Builder()
+                    .setTransport(BluetoothDevice.TRANSPORT_LE)
+                    .setAutoConnectEnabled(false)
+                    .setAutomaticMtuEnabled(false) // Same as the older call; frames are reassembled anyway.
+                    .build()
+                // Run callbacks on the Bluetooth thread, as the older call does; they hop to [scope] themselves.
+                remote.connectGatt(settings, Runnable::run, callback)
+            } else {
+                @Suppress("DEPRECATION")
+                remote.connectGatt(context, false, callback, BluetoothDevice.TRANSPORT_LE)
+            }
         } catch (e: SecurityException) {
             fail("Bluetooth permission was denied.")
             return
